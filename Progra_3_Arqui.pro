@@ -25,10 +25,15 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        ventanaprincipal.cpp
+        ventanaprincipal.cpp \
+    ventanagenerar.cpp \
+    datosmatriz.cpp
 
 HEADERS += \
-        ventanaprincipal.h
+        ventanaprincipal.h \
+    ventanagenerar.h \
+    datosmatriz.h
 
 FORMS += \
-        ventanaprincipal.ui
+        ventanaprincipal.ui \
+    ventanagenerar.ui

@@ -42,7 +42,7 @@
     </property>
    </widget>
   </widget>
-  <widget class="QPushButton" name="botonMultiplicarMatrices">
+  <widget class="QPushButton" name="botonOperar">
    <property name="geometry">
     <rect>
      <x>540</x>
@@ -55,7 +55,7 @@
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Multiplicar&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Multiplica las matrices A,B y deja el resultado en el cuadro de la izquierda.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="text">
-    <string>[OPERAR]</string>
+    <string>Sumar</string>
    </property>
   </widget>
   <widget class="QPushButton" name="botonVerResultado">
@@ -234,7 +234,11 @@
        </widget>
       </item>
       <item>
-       <widget class="QSpinBox" name="spinBox"/>
+       <widget class="QSpinBox" name="spinBox">
+        <property name="minimum">
+         <number>1</number>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
@@ -278,7 +282,7 @@
   <zorder>layoutWidget</zorder>
   <zorder>layoutWidget</zorder>
   <zorder>scrollArea</zorder>
-  <zorder>botonMultiplicarMatrices</zorder>
+  <zorder>botonOperar</zorder>
   <zorder>botonVerResultado</zorder>
   <zorder>labelMatrizX</zorder>
   <zorder>layoutWidget</zorder>
