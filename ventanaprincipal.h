@@ -15,6 +15,9 @@ public:
     explicit VentanaPrincipal(QWidget *parent = 0);
     ~VentanaPrincipal();
 
+private slots:
+    void on_seleccionadorOperacion_currentIndexChanged(int index);
+
 private:
     Ui::VentanaPrincipal *ui;
 };
