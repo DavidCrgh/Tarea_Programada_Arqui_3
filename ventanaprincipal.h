@@ -7,6 +7,7 @@
 
 #include "ventanagenerar.h"
 #include "datosmatriz.h"
+#include "hilogenerar.h"
 
 namespace Ui {
 class VentanaPrincipal;
@@ -33,6 +34,7 @@ private slots:
 private:
     Ui::VentanaPrincipal *ui;
     VentanaGenerar* ventanaGenerar;
+    //HiloGenerar* hiloGenerar;
 };
 
 #endif // VENTANAPRINCIPAL_H

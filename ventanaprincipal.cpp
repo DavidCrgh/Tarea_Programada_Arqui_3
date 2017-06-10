@@ -109,4 +109,6 @@ void VentanaPrincipal::on_botonGenerar_clicked()
 void VentanaPrincipal::recibirDatosMatriz(){
     DatosMatriz* datosMatriz = ventanaGenerar->datosMatriz;
     qDebug("Datos recibidos");
+    HiloGenerar* hilo = new HiloGenerar(datosMatriz);
+    hilo->run();
 }

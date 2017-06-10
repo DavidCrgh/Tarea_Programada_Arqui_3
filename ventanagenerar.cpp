@@ -18,6 +18,20 @@ VentanaGenerar::~VentanaGenerar()
 
 void VentanaGenerar::on_botonGenerar_clicked()
 {
+    datosMatriz->nombreArchivo = ui->entradaNombre->text();
+    datosMatriz->numeroFilas = ui->entradaFilas->text().toInt();
+    datosMatriz->numeroColumnas = ui->entradaColumnas->text().toInt();
+
+    int indiceActual = ui->seleccionadorSignos->currentIndex();
+
+    if(indiceActual == 0){
+        datosMatriz->signos = 'P';
+    } else if(indiceActual == 1){
+        datosMatriz->signos = 'N';
+    } else{
+        datosMatriz->signos = 'A';
+    }
+
     emit signalGenerar();
 }
 
