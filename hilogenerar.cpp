@@ -9,20 +9,35 @@ HiloGenerar::HiloGenerar(DatosMatriz* pDatosMatriz)
 }
 
 void HiloGenerar::run(){
-    //QFile archivo(datosMatriz->nombreArchivo + ".txt");
+    //QFile archivo("/home/davidcr/Desktop/mat");
+    QFile archivo("/home/davidcr/Desktop/" + datosMatriz->nombreArchivo + ".mtz");
 
-    /*if (!archivo.open(QIODevice::ReadOnly | QIODevice::Text)){
+    if (!archivo.open(QIODevice::WriteOnly)){
         return;
     }
 
-    QDataStream out(&archivo);*/
+    QDataStream salidaBytes(&archivo);
 
+
+    salidaBytes << (qint32) datosMatriz->numeroFilas;
+    salidaBytes << (qint32) datosMatriz->numeroColumnas;
+    //int d;
     for(int i = 0; i < datosMatriz->numeroFilas; i++){
         for(int j = 0; j < datosMatriz->numeroColumnas; j++){
-            qDebug("%d,%d %d", i, j, generarAleatorio(datosMatriz->signos));
-            //out << (qint32) generarAleatorio();
+            //d = generarAleatorio(datosMatriz->signos);
+            //qDebug("(%d,%d) : %d",i,j,d);
+            salidaBytes << (qint32) generarAleatorio(datosMatriz->signos);
         }
     }
+
+    /*archivo.seek(3999996); //
+    QDataStream in(archivo.read(4)); //LEER POSICION ESPECIFICA
+
+    int dato;
+
+    in >> dato;
+
+    qDebug("%d",dato);*/
 }
 
 int HiloGenerar::generarAleatorio(char signo){

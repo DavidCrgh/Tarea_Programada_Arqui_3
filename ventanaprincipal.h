@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QtWidgets>
 #include <QObject>
+#include <QFileDialog>
 
 #include "ventanagenerar.h"
 #include "datosmatriz.h"
@@ -27,6 +28,9 @@ private slots:
     void multiplicarEscalar();
     void multiplicarMatrices();
 
+    void abrirArchivoMatrizA();
+    void abrirArchivoMatrizB();
+
     void on_botonGenerar_clicked();
 
     void recibirDatosMatriz();
@@ -34,6 +38,8 @@ private slots:
 private:
     Ui::VentanaPrincipal *ui;
     VentanaGenerar* ventanaGenerar;
+    QString pathMatrizA;
+    QString pathMatrizB;
     //HiloGenerar* hiloGenerar;
 };
 

@@ -9,6 +9,14 @@ VentanaPrincipal::VentanaPrincipal(QWidget *parent) :
     ventanaGenerar = new VentanaGenerar();
     connect(ventanaGenerar, SIGNAL(signalGenerar()),
             this, SLOT(recibirDatosMatriz()));
+
+    connect(ui->botonAbrirA, SIGNAL(clicked(bool)),
+            this, SLOT(abrirArchivoMatrizA()));
+    connect(ui->botonAbrirB, SIGNAL(clicked(bool)),
+            this, SLOT(abrirArchivoMatrizB()));
+
+    pathMatrizA = "";
+    pathMatrizB = "";
 }
 
 VentanaPrincipal::~VentanaPrincipal()
@@ -56,6 +64,9 @@ void VentanaPrincipal::on_seleccionadorOperacion_currentIndexChanged(int index)
 
         ui->contenedorControles->addLayout(contenedorVertical);
         ui->botonOperar->setText("Sumar");
+
+        connect(botonAbrirB, SIGNAL(clicked(bool)),
+                this, SLOT(abrirArchivoMatrizB()));
         break;
     case 1: //Escalar
         labelOperando->setText("Escalar");
@@ -99,7 +110,19 @@ void VentanaPrincipal::multiplicarMatrices(){
     qDebug("!odnum aloH");
 }
 
+void VentanaPrincipal::abrirArchivoMatrizA(){
+    pathMatrizA = QFileDialog::getOpenFileName(this,
+                                               tr("Abrir Matriz A"),
+                                               "/home/davidcr/Desktop",
+                                               tr("Matrices (*.mtz)"));
+}
 
+void VentanaPrincipal::abrirArchivoMatrizB(){
+    pathMatrizB = QFileDialog::getOpenFileName(this,
+                                               tr("Abrir Matriz B"),
+                                               "/home/davidcr/Desktop",
+                                               tr("Matrices (*.mtz)"));
+}
 
 void VentanaPrincipal::on_botonGenerar_clicked()
 {
