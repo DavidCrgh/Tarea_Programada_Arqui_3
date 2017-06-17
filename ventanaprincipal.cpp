@@ -137,6 +137,8 @@ void VentanaPrincipal::sumarMatrices(){
         std::cout<<str.str()<<endl;
         string tiem = "El tiempo fue de : "+str.str()+" s";*/
 
+    gettimeofday(&inicioOperacion, NULL);
+
     while(true){
         if(indice + entradasPorHilo + entradasResiduo == totalEntradas){
             hiloSumar = new HiloSumar(pathMatrizA, pathMatrizB,
@@ -255,11 +257,21 @@ void VentanaPrincipal::recibirDatosMatriz(){
     hilo->start();
 }
 
+void VentanaPrincipal::mostrarTiempo(){
+    double tiempo = ((finOperacion.tv_sec - inicioOperacion.tv_sec) * 1000) //Segundos
+            + (finOperacion.tv_usec / 1000 - inicioOperacion.tv_usec / 1000); //Microsegundos
+    ui->labelTiempo->setText("Tiempo de Ejecución: "
+                             + QString::number(tiempo / pow(10, 3))
+                             + "s");
+}
+
 void VentanaPrincipal::incrementarEntradas(){
     entradasOperadas++;
 
     if(entradasOperadas == entradasAOperar){
         //Terminar de contar;
+        gettimeofday(&finOperacion, NULL);
+        mostrarTiempo();
         qDebug("Operacion terminada");
     }
 }

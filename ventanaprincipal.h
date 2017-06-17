@@ -10,6 +10,8 @@
 #include <QFileDialog>
 #include <QList>
 
+#include <sys/time.h>
+
 #include "ventanagenerar.h"
 #include "datosmatriz.h"
 
@@ -45,6 +47,8 @@ private slots:
     void recibirDatosMatriz();
     void incrementarEntradas();
 
+    void mostrarTiempo();
+
     void on_spinBox_valueChanged(int arg1);
 
     void on_botonVerA_clicked();
@@ -54,16 +58,22 @@ private slots:
 private:
     Ui::VentanaPrincipal *ui;
     VentanaGenerar* ventanaGenerar;
+
     QString pathMatrizA;
     QString pathMatrizB;
     int filasA;
     int columnasA;
     int filasB;
     int columnasB;
+
     int numeroHilos;
 
     long entradasAOperar;
     long entradasOperadas;
+
+    struct timeval inicioOperacion;
+    struct timeval finOperacion;
+
     //HiloGenerar* hiloGenerar;
 };
 

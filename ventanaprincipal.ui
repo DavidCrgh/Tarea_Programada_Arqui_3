@@ -98,14 +98,14 @@
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QLabel" name="lblTiempo">
+     <widget class="QLabel" name="labelTiempo">
       <property name="text">
        <string>Tiempo de Ejecución:</string>
       </property>
      </widget>
     </item>
     <item>
-     <widget class="QLabel" name="lblMemoria">
+     <widget class="QLabel" name="labelMemoria">
       <property name="text">
        <string>Memoria Consumida:</string>
       </property>
@@ -237,6 +237,9 @@
        <widget class="QSpinBox" name="spinBox">
         <property name="minimum">
          <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>999999999</number>
         </property>
        </widget>
       </item>

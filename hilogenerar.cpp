@@ -36,11 +36,13 @@ void HiloGenerar::run(){
         }
     }
 
+    //double elapsed = ((end.tv_sec - start.tv_sec) * 1000) + (end.tv_usec / 1000 - start.tv_usec / 1000);
     qDebug("Matriz Generada.");
     /*archivo.seek(3999996); //
     QDataStream in(archivo.read(4)); //LEER POSICION ESPECIFICA
 
     int dato;
+
 
     in >> dato;
 
