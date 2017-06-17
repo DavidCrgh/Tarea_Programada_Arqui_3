@@ -17,6 +17,7 @@
 
 #include "hilogenerar.h"
 #include "hilosumar.h"
+#include "hiloescalar.h"
 
 namespace Ui {
 class VentanaPrincipal;
@@ -37,7 +38,7 @@ private slots:
     void multiplicarEscalar();
     void multiplicarMatrices();
 
-    void pintarMatriz(QString matriz, int n, int m);
+    void pintarMatriz(QString matriz);
 
     void abrirArchivoMatrizA();
     void abrirArchivoMatrizB();
@@ -55,18 +56,23 @@ private slots:
 
     void on_botonVerB_clicked();
 
+    void on_botonVerResultado_clicked();
+
 private:
     Ui::VentanaPrincipal *ui;
     VentanaGenerar* ventanaGenerar;
 
     QString pathMatrizA;
     QString pathMatrizB;
+    QString pathResultado;
     int filasA;
     int columnasA;
     int filasB;
     int columnasB;
 
     int numeroHilos;
+
+    QLineEdit* escalar;
 
     long entradasAOperar;
     long entradasOperadas;

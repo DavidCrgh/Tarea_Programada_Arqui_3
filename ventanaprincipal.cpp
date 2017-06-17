@@ -20,7 +20,10 @@ VentanaPrincipal::VentanaPrincipal(QWidget *parent) :
 
     pathMatrizA = "";
     pathMatrizB = "";
+    pathResultado = "/home/davidcr/Desktop/Resultado.mtz";
     numeroHilos = 1;
+
+    escalar = NULL;
 
     entradasAOperar = 0;
     entradasOperadas = 0;
@@ -74,6 +77,8 @@ void VentanaPrincipal::on_seleccionadorOperacion_currentIndexChanged(int index)
 
         connect(botonAbrirB, SIGNAL(clicked(bool)),
                 this, SLOT(abrirArchivoMatrizB()));
+        connect(ui->botonOperar, SIGNAL(clicked(bool)),
+                this, SLOT(sumarMatrices()));
         break;
     case 1: //Escalar
         labelOperando->setText("Escalar");
@@ -84,6 +89,7 @@ void VentanaPrincipal::on_seleccionadorOperacion_currentIndexChanged(int index)
         ui->contenedorControles->addLayout(contenedorVertical);
         ui->botonOperar->setText("Multiplicar");
 
+        escalar = entradaEscalar;
         connect(ui->botonOperar, SIGNAL(clicked(bool)),
                 this, SLOT(multiplicarEscalar()));
         break;
@@ -110,10 +116,10 @@ void VentanaPrincipal::on_seleccionadorOperacion_currentIndexChanged(int index)
 }
 
 void VentanaPrincipal::sumarMatrices(){
-    if(QFile::exists("/home/davidcr/Desktop/Resultado.mtz")){
-        QFile::remove("/home/davidcr/Desktop/Resultado.mtz");
+    if(QFile::exists(pathResultado)){
+        QFile::remove(pathResultado);
     }
-    QFile::copy(pathMatrizA, "/home/davidcr/Desktop/Resultado.mtz");
+    QFile::copy(pathMatrizA, pathResultado);
 
     long totalEntradas = (filasA * columnasA);
     int entradasPorHilo = totalEntradas / numeroHilos;
@@ -126,6 +132,7 @@ void VentanaPrincipal::sumarMatrices(){
     HiloSumar* hiloSumar;
 
     ui->botonOperar->setEnabled(false);
+    ui->botonVerResultado->setEnabled(false);
     gettimeofday(&inicioOperacion, NULL);
 
     while(true){
@@ -151,14 +158,53 @@ void VentanaPrincipal::sumarMatrices(){
 }
 
 void VentanaPrincipal::multiplicarEscalar(){
-    qDebug("Hola mundo!");
+    if(QFile::exists(pathResultado)){
+        QFile::remove(pathResultado);
+    }
+    QFile::copy(pathMatrizA, pathResultado);
+
+    long totalEntradas = (filasA * columnasA);
+    int entradasPorHilo = totalEntradas / numeroHilos;
+    int entradasResiduo = totalEntradas - (entradasPorHilo * numeroHilos);
+
+    entradasAOperar = totalEntradas;
+    entradasOperadas = 0;
+
+    int indice = 0;
+    HiloEscalar* hiloEscalar;
+
+    int valorEscalar = escalar->text().toInt();
+
+    ui->botonOperar->setEnabled(false);
+    gettimeofday(&inicioOperacion, NULL);
+
+    while(true){
+        if(indice + entradasPorHilo + entradasResiduo == totalEntradas){
+            hiloEscalar = new HiloEscalar(pathMatrizA, valorEscalar,
+                                      indice,
+                                      indice + entradasPorHilo + entradasResiduo - 1);
+            connect(hiloEscalar, SIGNAL(triggerIncrementarEntradas()),
+                    this, SLOT(incrementarEntradas()));
+            hiloEscalar->start();
+            break;
+        } else {
+            hiloEscalar = new HiloEscalar(pathMatrizA, valorEscalar,
+                                      indice,
+                                      indice + entradasPorHilo - 1);
+            connect(hiloEscalar, SIGNAL(triggerIncrementarEntradas()),
+                    this, SLOT(incrementarEntradas()));
+            hiloEscalar->start();
+        }
+
+        indice += entradasPorHilo;
+    }
 }
 
 void VentanaPrincipal::multiplicarMatrices(){
     qDebug("!odnum aloH");
 }
 
-void VentanaPrincipal::pintarMatriz(QString matriz, int n, int m){
+void VentanaPrincipal::pintarMatriz(QString matriz){
     QFile archivo(matriz);
 
     if(!archivo.open(QIODevice::ReadWrite)){
@@ -167,7 +213,12 @@ void VentanaPrincipal::pintarMatriz(QString matriz, int n, int m){
 
     QDataStream in(&archivo);
 
-    archivo.seek(8); //Buscar byte donde empieza matriz
+    int n, m;
+
+    in >> n;
+    in >> m;
+
+    //archivo.seek(8); //Buscar byte donde empieza matriz
 
     QVBoxLayout* layoutTabla = new QVBoxLayout();
     QTableWidget* tabla = new QTableWidget(n,m);
@@ -206,7 +257,7 @@ void VentanaPrincipal::abrirArchivoMatrizA(){
                                            + QString::number(filasA)
                                            + " x "
                                            + QString::number(columnasA));
-            pintarMatriz(pathMatrizA, filasA, columnasA);
+            pintarMatriz(pathMatrizA);
         }
     }
 }
@@ -229,7 +280,7 @@ void VentanaPrincipal::abrirArchivoMatrizB(){
                                            + QString::number(filasB)
                                            + " x "
                                            + QString::number(columnasB));
-            pintarMatriz(pathMatrizB, filasB, columnasB);
+            pintarMatriz(pathMatrizB);
         }
     }
 }
@@ -261,6 +312,8 @@ void VentanaPrincipal::incrementarEntradas(){
         //Terminar de contar;
         gettimeofday(&finOperacion, NULL);
         mostrarTiempo();
+        ui->botonOperar->setEnabled(true);
+        ui->botonVerResultado->setEnabled(true);
         qDebug("Operacion terminada");
     }
 }
@@ -273,7 +326,7 @@ void VentanaPrincipal::on_spinBox_valueChanged(int arg1)
 void VentanaPrincipal::on_botonVerA_clicked()
 {
     if(pathMatrizA != ""){
-        pintarMatriz(pathMatrizA, filasA, columnasA);
+        pintarMatriz(pathMatrizA);
     }
 
 }
@@ -281,6 +334,15 @@ void VentanaPrincipal::on_botonVerA_clicked()
 void VentanaPrincipal::on_botonVerB_clicked()
 {
     if(pathMatrizB != ""){
-        pintarMatriz(pathMatrizB, filasB, columnasB);
+        pintarMatriz(pathMatrizB);
     }
+}
+
+void VentanaPrincipal::on_botonVerResultado_clicked()
+{
+    if(!QFile::exists(pathResultado)){
+        return;
+    }
+
+    pintarMatriz(pathResultado);
 }
