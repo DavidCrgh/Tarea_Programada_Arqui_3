@@ -125,18 +125,7 @@ void VentanaPrincipal::sumarMatrices(){
     int indice = 0;
     HiloSumar* hiloSumar;
 
-    /*
-     *  LARGE_INTEGER tiempo_in,tiempo_fin;
-        double secs;
-        QueryPerformanceCounter(&tiempo_in);
-        multiplicarMatrices(orden, matrizA, matrizB, matrizAB);
-        QueryPerformanceCounter(&tiempo_fin);
-        secs = calcularTiempo(&tiempo_fin, &tiempo_in);
-        std::stringstream str;
-        str << fixed << setprecision( 20 ) << secs;
-        std::cout<<str.str()<<endl;
-        string tiem = "El tiempo fue de : "+str.str()+" s";*/
-
+    ui->botonOperar->setEnabled(false);
     gettimeofday(&inicioOperacion, NULL);
 
     while(true){
