@@ -15,7 +15,6 @@ VentanaGenerar::~VentanaGenerar()
 }
 
 
-
 void VentanaGenerar::on_botonGenerar_clicked()
 {
     datosMatriz->nombreArchivo = ui->entradaNombre->text();

@@ -28,13 +28,15 @@ SOURCES += \
         ventanaprincipal.cpp \
     ventanagenerar.cpp \
     datosmatriz.cpp \
-    hilogenerar.cpp
+    hilogenerar.cpp \
+    hilosumar.cpp
 
 HEADERS += \
         ventanaprincipal.h \
     ventanagenerar.h \
     datosmatriz.h \
-    hilogenerar.h
+    hilogenerar.h \
+    hilosumar.h
 
 FORMS += \
         ventanaprincipal.ui \

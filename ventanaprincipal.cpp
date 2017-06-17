@@ -15,8 +15,15 @@ VentanaPrincipal::VentanaPrincipal(QWidget *parent) :
     connect(ui->botonAbrirB, SIGNAL(clicked(bool)),
             this, SLOT(abrirArchivoMatrizB()));
 
+    connect(ui->botonOperar, SIGNAL(clicked(bool)),
+            this, SLOT(sumarMatrices()));
+
     pathMatrizA = "";
     pathMatrizB = "";
+    numeroHilos = 1;
+
+    entradasAOperar = 0;
+    entradasOperadas = 0;
 }
 
 VentanaPrincipal::~VentanaPrincipal()
@@ -102,6 +109,56 @@ void VentanaPrincipal::on_seleccionadorOperacion_currentIndexChanged(int index)
     }
 }
 
+void VentanaPrincipal::sumarMatrices(){
+    if(QFile::exists("/home/davidcr/Desktop/Resultado.mtz")){
+        QFile::remove("/home/davidcr/Desktop/Resultado.mtz");
+    }
+    QFile::copy(pathMatrizA, "/home/davidcr/Desktop/Resultado.mtz");
+
+    long totalEntradas = (filasA * columnasA);
+    int entradasPorHilo = totalEntradas / numeroHilos;
+    int entradasResiduo = totalEntradas - (entradasPorHilo * numeroHilos);
+
+    entradasAOperar = totalEntradas;
+    entradasOperadas = 0;
+
+    int indice = 0;
+    HiloSumar* hiloSumar;
+
+    /*
+     *  LARGE_INTEGER tiempo_in,tiempo_fin;
+        double secs;
+        QueryPerformanceCounter(&tiempo_in);
+        multiplicarMatrices(orden, matrizA, matrizB, matrizAB);
+        QueryPerformanceCounter(&tiempo_fin);
+        secs = calcularTiempo(&tiempo_fin, &tiempo_in);
+        std::stringstream str;
+        str << fixed << setprecision( 20 ) << secs;
+        std::cout<<str.str()<<endl;
+        string tiem = "El tiempo fue de : "+str.str()+" s";*/
+
+    while(true){
+        if(indice + entradasPorHilo + entradasResiduo == totalEntradas){
+            hiloSumar = new HiloSumar(pathMatrizA, pathMatrizB,
+                                      indice,
+                                      indice + entradasPorHilo + entradasResiduo - 1);
+            connect(hiloSumar, SIGNAL(triggerIncrementarEntradas()),
+                    this, SLOT(incrementarEntradas()));
+            hiloSumar->start();
+            break;
+        } else {
+            hiloSumar = new HiloSumar(pathMatrizA, pathMatrizB,
+                                      indice,
+                                      indice + entradasPorHilo - 1);
+            connect(hiloSumar, SIGNAL(triggerIncrementarEntradas()),
+                    this, SLOT(incrementarEntradas()));
+            hiloSumar->start();
+        }
+
+        indice += entradasPorHilo;
+    }
+}
+
 void VentanaPrincipal::multiplicarEscalar(){
     qDebug("Hola mundo!");
 }
@@ -110,11 +167,57 @@ void VentanaPrincipal::multiplicarMatrices(){
     qDebug("!odnum aloH");
 }
 
+void VentanaPrincipal::pintarMatriz(QString matriz, int n, int m){
+    QFile archivo(matriz);
+
+    if(!archivo.open(QIODevice::ReadWrite)){
+        return; //Si falla en abrir no se hace nada
+    }
+
+    QDataStream in(&archivo);
+
+    archivo.seek(8); //Buscar byte donde empieza matriz
+
+    QVBoxLayout* layoutTabla = new QVBoxLayout();
+    QTableWidget* tabla = new QTableWidget(n,m);
+
+    delete ui->scrollAreaWidgetContents->layout();
+
+    int datoActual;
+
+    for(int i = 0; i < n; i++){
+        for(int j = 0; j < m; j++){
+            in >> datoActual;
+            tabla->setItem(i, j,
+                           new QTableWidgetItem(QString::number(datoActual)));
+        }
+    }
+
+    layoutTabla->addWidget(tabla);
+    ui->scrollAreaWidgetContents->setLayout(layoutTabla);
+}
+
 void VentanaPrincipal::abrirArchivoMatrizA(){
     pathMatrizA = QFileDialog::getOpenFileName(this,
                                                tr("Abrir Matriz A"),
                                                "/home/davidcr/Desktop",
                                                tr("Matrices (*.mtz)"));
+    if(pathMatrizA != ""){
+        QFile archivo(pathMatrizA);
+
+        if(archivo.open(QIODevice::ReadOnly)){
+            QDataStream in(&archivo);
+
+            in >> filasA;
+            in >> columnasA;
+
+            ui->labelDimensionesA->setText("A: "
+                                           + QString::number(filasA)
+                                           + " x "
+                                           + QString::number(columnasA));
+            pintarMatriz(pathMatrizA, filasA, columnasA);
+        }
+    }
 }
 
 void VentanaPrincipal::abrirArchivoMatrizB(){
@@ -122,6 +225,22 @@ void VentanaPrincipal::abrirArchivoMatrizB(){
                                                tr("Abrir Matriz B"),
                                                "/home/davidcr/Desktop",
                                                tr("Matrices (*.mtz)"));
+    if(pathMatrizB != ""){
+        QFile archivo(pathMatrizB);
+
+        if(archivo.open(QIODevice::ReadOnly)){
+            QDataStream in(&archivo);
+
+            in >> filasB;
+            in >> columnasB;
+
+            ui->labelDimensionesB->setText("B: "
+                                           + QString::number(filasB)
+                                           + " x "
+                                           + QString::number(columnasB));
+            pintarMatriz(pathMatrizB, filasB, columnasB);
+        }
+    }
 }
 
 void VentanaPrincipal::on_botonGenerar_clicked()
@@ -133,5 +252,34 @@ void VentanaPrincipal::recibirDatosMatriz(){
     DatosMatriz* datosMatriz = ventanaGenerar->datosMatriz;
     qDebug("Datos recibidos");
     HiloGenerar* hilo = new HiloGenerar(datosMatriz);
-    hilo->run();
+    hilo->start();
+}
+
+void VentanaPrincipal::incrementarEntradas(){
+    entradasOperadas++;
+
+    if(entradasOperadas == entradasAOperar){
+        //Terminar de contar;
+        qDebug("Operacion terminada");
+    }
+}
+
+void VentanaPrincipal::on_spinBox_valueChanged(int arg1)
+{
+    numeroHilos = arg1;
+}
+
+void VentanaPrincipal::on_botonVerA_clicked()
+{
+    if(pathMatrizA != ""){
+        pintarMatriz(pathMatrizA, filasA, columnasA);
+    }
+
+}
+
+void VentanaPrincipal::on_botonVerB_clicked()
+{
+    if(pathMatrizB != ""){
+        pintarMatriz(pathMatrizB, filasB, columnasB);
+    }
 }

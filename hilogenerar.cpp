@@ -9,8 +9,14 @@ HiloGenerar::HiloGenerar(DatosMatriz* pDatosMatriz)
 }
 
 void HiloGenerar::run(){
-    //QFile archivo("/home/davidcr/Desktop/mat");
-    QFile archivo("/home/davidcr/Desktop/" + datosMatriz->nombreArchivo + ".mtz");
+    QString nombreArchivo = "/home/davidcr/Desktop/"
+            + datosMatriz->nombreArchivo + ".mtz";
+
+    if(QFile::exists(nombreArchivo)){
+        QFile::remove(nombreArchivo);
+    }
+
+    QFile archivo(nombreArchivo);
 
     if (!archivo.open(QIODevice::WriteOnly)){
         return;
@@ -30,6 +36,7 @@ void HiloGenerar::run(){
         }
     }
 
+    qDebug("Matriz Generada.");
     /*archivo.seek(3999996); //
     QDataStream in(archivo.read(4)); //LEER POSICION ESPECIFICA
 
