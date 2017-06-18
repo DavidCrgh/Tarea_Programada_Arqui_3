@@ -49,7 +49,6 @@ void clearLayout(QLayout *layout){
     }
 }
 
-
 void VentanaPrincipal::on_seleccionadorOperacion_currentIndexChanged(int index)
 {
     clearLayout(ui->contenedorControles);
@@ -108,8 +107,8 @@ void VentanaPrincipal::on_seleccionadorOperacion_currentIndexChanged(int index)
         connect(ui->botonOperar, SIGNAL(clicked(bool)),
                 this, SLOT(multiplicarMatrices()));
         break;
-    case 3: //Inversa
-        ui->botonOperar->setText("Invertir");
+    case 3: //Transpuesta
+        ui->botonOperar->setText("Transponer");
         break;
     case 4: //Tipo
         ui->botonOperar->setText("Tipo Matriz");
@@ -118,6 +117,14 @@ void VentanaPrincipal::on_seleccionadorOperacion_currentIndexChanged(int index)
 }
 
 void VentanaPrincipal::sumarMatrices(){
+    if(!(filasA == filasB) && !(columnasA == columnasB)){
+        QMessageBox mensajeError;
+        mensajeError.setText(
+                    "Error: \n Las matrices deben ser de dimensiones iguales");
+        mensajeError.exec();
+        return;
+    }
+
     if(QFile::exists(pathResultado)){
         QFile::remove(pathResultado);
     }
@@ -203,6 +210,16 @@ void VentanaPrincipal::multiplicarEscalar(){
 }
 
 void VentanaPrincipal::multiplicarMatrices(){
+    if(!(columnasA == filasB)){
+        QMessageBox mensajeError;
+        mensajeError.setText("Error:\n"
+                             "La multiplicacion de matrices requiere que el numero"
+                             "de columnas del primer operando sea igual al numero "
+                             "de filas del segundo.\n\n"
+                             "Nota: la multiplicacion de matrices NO es conmutativa.");
+        mensajeError.exec();
+    }
+
     if(QFile::exists(pathResultado)){
         QFile::remove(pathResultado);
     }
@@ -350,8 +367,8 @@ void VentanaPrincipal::mostrarTiempo(){
     double tiempo = ((finOperacion.tv_sec - inicioOperacion.tv_sec) * 1000) //Segundos
             + (finOperacion.tv_usec / 1000 - inicioOperacion.tv_usec / 1000); //Microsegundos
     ui->labelTiempo->setText("Tiempo de Ejecución: "
-                             + QString::number(tiempo / pow(10, 3))
-                             + "s");
+                             + QString::number(tiempo)
+                             + " ms");
 }
 
 void VentanaPrincipal::incrementarEntradas(){

@@ -9,6 +9,7 @@
 #include <QDataStream>
 #include <QFileDialog>
 #include <QList>
+#include <QMessageBox>
 
 #include <sys/time.h>
 
@@ -38,6 +39,7 @@ private slots:
     void sumarMatrices();
     void multiplicarEscalar();
     void multiplicarMatrices();
+    //void transponerMatriz();
 
     void pintarMatriz(QString matriz);
 
