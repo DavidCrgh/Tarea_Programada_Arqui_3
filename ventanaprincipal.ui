@@ -51,9 +51,6 @@
      <height>51</height>
     </rect>
    </property>
-   <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Multiplicar&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Multiplica las matrices A,B y deja el resultado en el cuadro de la izquierda.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-   </property>
    <property name="text">
     <string>Sumar</string>
    </property>

@@ -18,6 +18,7 @@
 #include "hilogenerar.h"
 #include "hilosumar.h"
 #include "hiloescalar.h"
+#include "hilomultiplicar.h"
 
 namespace Ui {
 class VentanaPrincipal;

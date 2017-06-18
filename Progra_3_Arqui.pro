@@ -30,7 +30,8 @@ SOURCES += \
     datosmatriz.cpp \
     hilogenerar.cpp \
     hilosumar.cpp \
-    hiloescalar.cpp
+    hiloescalar.cpp \
+    hilomultiplicar.cpp
 
 HEADERS += \
         ventanaprincipal.h \
@@ -38,7 +39,8 @@ HEADERS += \
     datosmatriz.h \
     hilogenerar.h \
     hilosumar.h \
-    hiloescalar.h
+    hiloescalar.h \
+    hilomultiplicar.h
 
 FORMS += \
         ventanaprincipal.ui \

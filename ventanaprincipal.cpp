@@ -103,6 +103,8 @@ void VentanaPrincipal::on_seleccionadorOperacion_currentIndexChanged(int index)
         ui->contenedorControles->addLayout(contenedorVertical);
         ui->botonOperar->setText("Multiplicar");
 
+        connect(botonAbrirB, SIGNAL(clicked(bool)),
+                this, SLOT(abrirArchivoMatrizB()));
         connect(ui->botonOperar, SIGNAL(clicked(bool)),
                 this, SLOT(multiplicarMatrices()));
         break;
@@ -201,7 +203,54 @@ void VentanaPrincipal::multiplicarEscalar(){
 }
 
 void VentanaPrincipal::multiplicarMatrices(){
-    qDebug("!odnum aloH");
+    if(QFile::exists(pathResultado)){
+        QFile::remove(pathResultado);
+    }
+    QFile archivoResultado(pathResultado);
+    if(!archivoResultado.open(QIODevice::ReadWrite)){
+        return;
+    }
+    QDataStream out(&archivoResultado);
+
+    out << (qint32) filasA;
+    out << (qint32) columnasB;
+
+    archivoResultado.close();
+
+    long totalEntradas = (filasA * columnasB);
+    int entradasPorHilo = totalEntradas / numeroHilos;
+    int entradasResiduo = totalEntradas - (entradasPorHilo * numeroHilos);
+
+    entradasAOperar = totalEntradas;
+    entradasOperadas = 0;
+
+    int indice = 0;
+    HiloMultiplicar* hiloMultiplicar;
+
+    ui->botonOperar->setEnabled(false);
+    ui->botonVerResultado->setEnabled(false);
+    gettimeofday(&inicioOperacion, NULL);
+
+    while(true){
+        if(indice + entradasPorHilo + entradasResiduo == totalEntradas){
+            hiloMultiplicar = new HiloMultiplicar(pathMatrizA, pathMatrizB,
+                                      indice,
+                                      indice + entradasPorHilo + entradasResiduo - 1);
+            connect(hiloMultiplicar, SIGNAL(triggerIncrementarEntradas()),
+                    this, SLOT(incrementarEntradas()));
+            hiloMultiplicar->start();
+            break;
+        } else {
+            hiloMultiplicar = new HiloMultiplicar(pathMatrizA, pathMatrizB,
+                                      indice,
+                                      indice + entradasPorHilo - 1);
+            connect(hiloMultiplicar, SIGNAL(triggerIncrementarEntradas()),
+                    this, SLOT(incrementarEntradas()));
+            hiloMultiplicar->start();
+        }
+
+        indice += entradasPorHilo;
+    }
 }
 
 void VentanaPrincipal::pintarMatriz(QString matriz){
