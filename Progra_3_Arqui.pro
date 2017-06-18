@@ -17,6 +17,15 @@ TEMPLATE = app
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
 
+QMAKE_EXTRA_COMPILERS += nasm
+NASMEXTRAFLAGS = -f elf64 -g -F dwarf
+OTHER_FILES += $$NASM_SOURCES
+nasm.output = ${QMAKE_FILE_BASE}.o
+nasm.commands = nasm $$NASMEXTRAFLAGS -o ${QMAKE_FILE_BASE}.o ${QMAKE_FILE_NAME}
+nasm.input = NASM_SOURCES
+
+NASM_SOURCES += multiplicacion.asm
+
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
@@ -40,8 +49,12 @@ HEADERS += \
     hilogenerar.h \
     hilosumar.h \
     hiloescalar.h \
-    hilomultiplicar.h
+    hilomultiplicar.h \
+    multiplicacion_asm.h
 
 FORMS += \
         ventanaprincipal.ui \
     ventanagenerar.ui
+
+DISTFILES += \
+    multiplicacion.asm

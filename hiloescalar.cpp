@@ -37,7 +37,7 @@ void HiloEscalar::run(){
     for(int i = 0; i <= (fin - inicio); i++){
         mutex.lock();
         inA >> entradaA;
-        entradaResultado = entradaA * escalar; //TODO Aqui se invoca a proc ASM
+        entradaResultado = multiplicar(entradaA, escalar);//entradaA * escalar; //TODO Aqui se invoca a proc ASM
         outResultado << (qint32) entradaResultado;
         mutex.unlock();
         emit triggerIncrementarEntradas();

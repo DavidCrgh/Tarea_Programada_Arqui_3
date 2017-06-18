@@ -10,6 +10,8 @@
 #include <QFile>
 #include <QDataStream>
 
+#include "multiplicacion_asm.h"
+
 class HiloEscalar : public QThread
 {
     Q_OBJECT
