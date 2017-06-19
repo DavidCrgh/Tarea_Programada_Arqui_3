@@ -40,7 +40,9 @@ SOURCES += \
     hilogenerar.cpp \
     hilosumar.cpp \
     hiloescalar.cpp \
-    hilomultiplicar.cpp
+    hilomultiplicar.cpp \
+    hilotransponer.cpp \
+    hilotipo.cpp
 
 HEADERS += \
         ventanaprincipal.h \
@@ -50,7 +52,9 @@ HEADERS += \
     hilosumar.h \
     hiloescalar.h \
     hilomultiplicar.h \
-    multiplicacion_asm.h
+    multiplicacion_asm.h \
+    hilotransponer.h \
+    hilotipo.h
 
 FORMS += \
         ventanaprincipal.ui \

@@ -97,14 +97,14 @@
     <item>
      <widget class="QLabel" name="labelTiempo">
       <property name="text">
-       <string>Tiempo de Ejecución:</string>
+       <string>Tiempo de Ejecución: ~</string>
       </property>
      </widget>
     </item>
     <item>
      <widget class="QLabel" name="labelMemoria">
       <property name="text">
-       <string>Memoria Consumida:</string>
+       <string>Memoria Consumida: 0 bytes</string>
       </property>
      </widget>
     </item>

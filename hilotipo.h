@@ -1,5 +1,5 @@
-#ifndef HILOESCALAR_H
-#define HILOESCALAR_H
+#ifndef HILOTIPO_H
+#define HILOTIPO_H
 
 #include <QObject>
 #include <QThread>
@@ -10,23 +10,24 @@
 #include <QFile>
 #include <QDataStream>
 
-#include "multiplicacion_asm.h"
+#include <QString>
 
-class HiloEscalar : public QThread
+class HiloTipo : public QThread
 {
     Q_OBJECT
 public:
     QString matrizA;
-    int escalar;
-    int inicio;
-    int fin;
-    HiloEscalar(QString matrizA, int escalar, int inicio, int fin);
+    QString mensajeTipo;
+    bool esCuadrada;
+
+    HiloTipo(QString matrizA, QString mensajeTipo, bool esCuadrada);
 
     void run();
 
 signals:
     void triggerIncrementarEntradas();
+    void finalizarRevision(QString);
     void triggerActualizarMemoria(int);
 };
 
-#endif // HILOESCALAR_H
+#endif // HILOTIPO_H

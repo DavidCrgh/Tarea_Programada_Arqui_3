@@ -29,6 +29,7 @@ public:
 
 signals:
     void triggerIncrementarEntradas();
+    void triggerActualizarMemoria(int);
 };
 
 #endif // HILOMULTIPLICAR_H

@@ -7,9 +7,10 @@ VentanaPrincipal::VentanaPrincipal(QWidget *parent) :
 {
     ui->setupUi(this);
     ventanaGenerar = new VentanaGenerar();
+    connect(ui->seleccionadorOperacion, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(cambiarOperacion(int)));
     connect(ventanaGenerar, SIGNAL(signalGenerar()),
             this, SLOT(recibirDatosMatriz()));
-
     connect(ui->botonAbrirA, SIGNAL(clicked(bool)),
             this, SLOT(abrirArchivoMatrizA()));
     connect(ui->botonAbrirB, SIGNAL(clicked(bool)),
@@ -27,13 +28,14 @@ VentanaPrincipal::VentanaPrincipal(QWidget *parent) :
 
     entradasAOperar = 0;
     entradasOperadas = 0;
+
+    memoriaConsumida = 0;
 }
 
 VentanaPrincipal::~VentanaPrincipal()
 {
     delete ui;
 }
-
 
 void clearLayout(QLayout *layout){
     QLayoutItem *item;
@@ -49,17 +51,14 @@ void clearLayout(QLayout *layout){
     }
 }
 
-void VentanaPrincipal::on_seleccionadorOperacion_currentIndexChanged(int index)
+void VentanaPrincipal::cambiarOperacion(int index)
 {
     clearLayout(ui->contenedorControles);
     ui->botonOperar->disconnect();
 
     QVBoxLayout* contenedorVertical = new QVBoxLayout();
-
     QLabel* labelOperando = new QLabel("");
-
     QPushButton* botonAbrirB = new QPushButton("");
-
     QLineEdit* entradaEscalar = new QLineEdit;
     entradaEscalar->setValidator(new QIntValidator(this));
 
@@ -109,9 +108,13 @@ void VentanaPrincipal::on_seleccionadorOperacion_currentIndexChanged(int index)
         break;
     case 3: //Transpuesta
         ui->botonOperar->setText("Transponer");
+        connect(ui->botonOperar, SIGNAL(clicked(bool)),
+                this, SLOT(transponerMatriz()));
         break;
     case 4: //Tipo
         ui->botonOperar->setText("Tipo Matriz");
+        connect(ui->botonOperar, SIGNAL(clicked(bool)),
+                this, SLOT(determinarTipo()));
         break;
     }
 }
@@ -151,6 +154,8 @@ void VentanaPrincipal::sumarMatrices(){
                                       indice + entradasPorHilo + entradasResiduo - 1);
             connect(hiloSumar, SIGNAL(triggerIncrementarEntradas()),
                     this, SLOT(incrementarEntradas()));
+            connect(hiloSumar, SIGNAL(triggerActualizarMemoria(int)),
+                    this, SLOT(actualizarMemoria(int)));
             hiloSumar->start();
             break;
         } else {
@@ -159,6 +164,8 @@ void VentanaPrincipal::sumarMatrices(){
                                       indice + entradasPorHilo - 1);
             connect(hiloSumar, SIGNAL(triggerIncrementarEntradas()),
                     this, SLOT(incrementarEntradas()));
+            connect(hiloSumar, SIGNAL(triggerActualizarMemoria(int)),
+                    this, SLOT(actualizarMemoria(int)));
             hiloSumar->start();
         }
 
@@ -194,6 +201,8 @@ void VentanaPrincipal::multiplicarEscalar(){
                                       indice + entradasPorHilo + entradasResiduo - 1);
             connect(hiloEscalar, SIGNAL(triggerIncrementarEntradas()),
                     this, SLOT(incrementarEntradas()));
+            connect(hiloEscalar, SIGNAL(triggerActualizarMemoria(int)),
+                    this, SLOT(actualizarMemoria(int)));
             hiloEscalar->start();
             break;
         } else {
@@ -202,6 +211,8 @@ void VentanaPrincipal::multiplicarEscalar(){
                                       indice + entradasPorHilo - 1);
             connect(hiloEscalar, SIGNAL(triggerIncrementarEntradas()),
                     this, SLOT(incrementarEntradas()));
+            connect(hiloEscalar, SIGNAL(triggerActualizarMemoria(int)),
+                    this, SLOT(actualizarMemoria(int)));
             hiloEscalar->start();
         }
 
@@ -255,6 +266,8 @@ void VentanaPrincipal::multiplicarMatrices(){
                                       indice + entradasPorHilo + entradasResiduo - 1);
             connect(hiloMultiplicar, SIGNAL(triggerIncrementarEntradas()),
                     this, SLOT(incrementarEntradas()));
+            connect(hiloMultiplicar, SIGNAL(triggerActualizarMemoria(int)),
+                    this, SLOT(actualizarMemoria(int)));
             hiloMultiplicar->start();
             break;
         } else {
@@ -263,11 +276,102 @@ void VentanaPrincipal::multiplicarMatrices(){
                                       indice + entradasPorHilo - 1);
             connect(hiloMultiplicar, SIGNAL(triggerIncrementarEntradas()),
                     this, SLOT(incrementarEntradas()));
+            connect(hiloMultiplicar, SIGNAL(triggerActualizarMemoria(int)),
+                    this, SLOT(actualizarMemoria(int)));
             hiloMultiplicar->start();
         }
 
         indice += entradasPorHilo;
     }
+}
+
+void VentanaPrincipal::transponerMatriz(){
+    if(QFile::exists(pathResultado)){
+        QFile::remove(pathResultado);
+    }
+    QFile archivoResultado(pathResultado);
+
+    if(!archivoResultado.open(QIODevice::ReadWrite)){
+        return;
+    }
+
+    QDataStream out(&archivoResultado);
+
+    out << (qint32) columnasA;
+    out << (qint32) filasA;
+
+    archivoResultado.close();
+
+    long totalEntradas = (filasA * columnasA);
+    int entradasPorHilo = totalEntradas / numeroHilos;
+    int entradasResiduo = totalEntradas - (entradasPorHilo * numeroHilos);
+
+    entradasAOperar = totalEntradas;
+    entradasOperadas = 0;
+
+    int indice = 0;
+    HiloTransponer* hiloTransponer;
+
+    ui->botonOperar->setEnabled(false);
+    gettimeofday(&inicioOperacion, NULL);
+
+    while(true){
+        if(indice + entradasPorHilo + entradasResiduo == totalEntradas){
+            hiloTransponer = new HiloTransponer(pathMatrizA,
+                                      indice,
+                                      indice + entradasPorHilo + entradasResiduo - 1);
+            connect(hiloTransponer, SIGNAL(triggerIncrementarEntradas()),
+                    this, SLOT(incrementarEntradas()));
+            connect(hiloTransponer, SIGNAL(triggerActualizarMemoria(int)),
+                    this, SLOT(actualizarMemoria(int)));
+            hiloTransponer->start();
+            break;
+        } else {
+            hiloTransponer = new HiloTransponer(pathMatrizA,
+                                      indice,
+                                      indice + entradasPorHilo - 1);
+            connect(hiloTransponer, SIGNAL(triggerIncrementarEntradas()),
+                    this, SLOT(incrementarEntradas()));
+            connect(hiloTransponer, SIGNAL(triggerActualizarMemoria(int)),
+                    this, SLOT(actualizarMemoria(int)));
+            hiloTransponer->start();
+        }
+
+        indice += entradasPorHilo;
+    }
+}
+
+void VentanaPrincipal::determinarTipo(){
+    QString mensajeTipos = "La matriz tiene las siguientes caracteristicas:\n";
+    bool esCuadrada;
+
+    entradasAOperar = (filasA * columnasA);
+    entradasOperadas = 0;
+
+    ui->botonOperar->setEnabled(false);
+    gettimeofday(&inicioOperacion, NULL);
+
+    //Fila
+    if(filasA == 1){
+        mensajeTipos += "   * Matriz Fila\n";
+    }
+    if(columnasA == 1){
+        mensajeTipos += "   * Matriz Columna\n";
+    }
+    if(filasA != columnasA){
+        mensajeTipos += "   * Matriz Rectangular\n";
+        esCuadrada = false;
+    } else{
+        mensajeTipos += "   * Matriz Cuadrada\n";
+        esCuadrada = true;
+    }
+
+    HiloTipo* hiloTipo = new HiloTipo(pathMatrizA, mensajeTipos, esCuadrada);
+    connect(hiloTipo, SIGNAL(triggerIncrementarEntradas()),
+            this, SLOT(incrementarEntradas()));
+    connect(hiloTipo, SIGNAL(finalizarRevision(QString)),
+            this, SLOT(finalizarRevisionTipo(QString)));
+    hiloTipo->start();
 }
 
 void VentanaPrincipal::pintarMatriz(QString matriz){
@@ -384,6 +488,20 @@ void VentanaPrincipal::incrementarEntradas(){
     }
 }
 
+void VentanaPrincipal::actualizarMemoria(int bytes){
+    memoriaConsumida += bytes;
+    ui->labelMemoria->setText("Memoria Consumida: "
+                              + QString::number(memoriaConsumida) + " bytes");
+}
+
+void VentanaPrincipal::finalizarRevisionTipo(QString mensaje){
+    entradasOperadas = entradasAOperar - 1;
+    incrementarEntradas();
+    QMessageBox mensajeTipos;
+    mensajeTipos.setText(mensaje);
+    mensajeTipos.exec();
+}
+
 void VentanaPrincipal::on_spinBox_valueChanged(int arg1)
 {
     numeroHilos = arg1;
@@ -394,7 +512,6 @@ void VentanaPrincipal::on_botonVerA_clicked()
     if(pathMatrizA != ""){
         pintarMatriz(pathMatrizA);
     }
-
 }
 
 void VentanaPrincipal::on_botonVerB_clicked()

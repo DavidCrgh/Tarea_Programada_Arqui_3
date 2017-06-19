@@ -9,6 +9,7 @@ HiloSumar::HiloSumar(QString matrizA, QString matrizB, int inicio, int fin)
 }
 
 void HiloSumar::run(){
+    emit triggerActualizarMemoria(matrizA.size() + matrizB.size() + 2 * 4);
     QMutex mutex;
 
     mutex.lock();
@@ -19,8 +20,8 @@ void HiloSumar::run(){
 
     mutex.lock();
     if(!archivoA.open(QIODevice::ReadWrite)
-            & !archivoB.open(QIODevice::ReadWrite)
-            & !archivoResultado.open(QIODevice::ReadWrite)){
+            || !archivoB.open(QIODevice::ReadWrite)
+            || !archivoResultado.open(QIODevice::ReadWrite)){
         return;
     }
     archivoA.seek((2 + inicio) * 4);
@@ -39,13 +40,24 @@ void HiloSumar::run(){
 
     int entradaResultado = 0;
 
+    emit triggerActualizarMemoria(3 * sizeof(int)
+                                  + 3 * (sizeof(QFile) + sizeof(QDataStream))
+                                  + sizeof(QMutex));
+
     for(int i = 0; i <= (fin - inicio); i++){
         mutex.lock();
         inA >> entradaA;
         inB >> entradaB;
         entradaResultado = entradaA + entradaB;
         outResultado << (qint32) entradaResultado;
-        mutex.unlock();
         emit triggerIncrementarEntradas();
+        mutex.unlock();
     }
+    archivoA.close();
+    archivoB.close();
+    archivoResultado.close();
+    emit triggerActualizarMemoria(-(matrizA.size() + matrizB.size() + 2 * 4));
+    emit triggerActualizarMemoria(-(3 * sizeof(int)
+                                  + 3 * (sizeof(QFile) + sizeof(QDataStream))
+                                  + sizeof(QMutex)));
 }

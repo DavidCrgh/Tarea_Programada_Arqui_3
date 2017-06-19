@@ -20,6 +20,8 @@
 #include "hilosumar.h"
 #include "hiloescalar.h"
 #include "hilomultiplicar.h"
+#include "hilotransponer.h"
+#include "hilotipo.h"
 
 namespace Ui {
 class VentanaPrincipal;
@@ -34,12 +36,13 @@ public:
     ~VentanaPrincipal();
 
 private slots:
-    void on_seleccionadorOperacion_currentIndexChanged(int index);
+    void cambiarOperacion(int index);
 
     void sumarMatrices();
     void multiplicarEscalar();
     void multiplicarMatrices();
-    //void transponerMatriz();
+    void transponerMatriz();
+    void determinarTipo();
 
     void pintarMatriz(QString matriz);
 
@@ -50,6 +53,8 @@ private slots:
 
     void recibirDatosMatriz();
     void incrementarEntradas();
+    void actualizarMemoria(int bytes);
+    void finalizarRevisionTipo(QString mensaje);
 
     void mostrarTiempo();
 
@@ -82,6 +87,8 @@ private:
 
     struct timeval inicioOperacion;
     struct timeval finOperacion;
+
+    long memoriaConsumida;
 
     //HiloGenerar* hiloGenerar;
 };

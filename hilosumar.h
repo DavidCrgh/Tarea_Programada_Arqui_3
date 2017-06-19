@@ -25,6 +25,7 @@ public:
 
 signals:
     void triggerIncrementarEntradas();
+    void triggerActualizarMemoria(int);
 };
 
 #endif // HILOSUMAR_H

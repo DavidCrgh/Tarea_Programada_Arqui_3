@@ -21,6 +21,9 @@ QList<int> HiloMultiplicar::pasarRtoR2(int i, int numColumnas){
 }
 
 void HiloMultiplicar::run(){
+    //Bytes consumidos por atributos del hilo
+    emit triggerActualizarMemoria(matrizA.size() + matrizB.size() + 2 * 4);
+
     QMutex mutex;
 
     mutex.lock();
@@ -31,8 +34,8 @@ void HiloMultiplicar::run(){
 
     mutex.lock();
     if(!archivoA.open(QIODevice::ReadWrite)
-            & !archivoB.open(QIODevice::ReadWrite)
-            & !archivoResultado.open(QIODevice::ReadWrite)){
+            || !archivoB.open(QIODevice::ReadWrite)
+            || !archivoResultado.open(QIODevice::ReadWrite)){
         return;
     }
     mutex.unlock();
@@ -61,6 +64,11 @@ void HiloMultiplicar::run(){
     int entradaResultado;
     QList<int> parEntradaActual;
 
+    emit triggerActualizarMemoria(9 * sizeof (int)
+                                  + sizeof (QMutex)
+                                  + (sizeof(QFile) + sizeof (QDataStream)) * 3);
+    //Nueve ints consumidos metodo run + los objetos de IO y concurrencia
+
     archivoResultado.seek((2 + inicio) * 4);
 
     for(int i = inicio; i <= fin; i++){
@@ -84,4 +92,9 @@ void HiloMultiplicar::run(){
 
         emit triggerIncrementarEntradas();
     }
+    //Cuando termina el hilo se limpia la memoria usada
+    emit triggerActualizarMemoria(-(matrizA.size() + matrizB.size() + 2 * 4));
+    emit triggerActualizarMemoria(-(9 * sizeof (int)
+                                    + sizeof (QMutex)
+                                    + (sizeof(QFile) + sizeof (QDataStream)) * 3));
 }

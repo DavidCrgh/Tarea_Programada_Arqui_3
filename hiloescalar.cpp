@@ -9,6 +9,7 @@ HiloEscalar::HiloEscalar(QString matrizA, int escalar, int inicio, int fin)
 }
 
 void HiloEscalar::run(){
+    emit triggerActualizarMemoria(matrizA.size() + 3 * sizeof(int));
     QMutex mutex;
 
     mutex.lock();
@@ -18,7 +19,7 @@ void HiloEscalar::run(){
 
     mutex.lock();
     if(!archivoA.open(QIODevice::ReadWrite)
-            & !archivoResultado.open(QIODevice::ReadWrite)){
+            || !archivoResultado.open(QIODevice::ReadWrite)){
         return;
     }
     archivoA.seek((2 + inicio) * 4);
@@ -34,12 +35,22 @@ void HiloEscalar::run(){
 
     int entradaResultado = 0;
 
+    emit triggerActualizarMemoria(2 * sizeof (int)
+                                  + 2 * sizeof (QFile)
+                                  + 2 * sizeof (QDataStream)
+                                  + sizeof (QMutex));
+
     for(int i = 0; i <= (fin - inicio); i++){
         mutex.lock();
         inA >> entradaA;
-        entradaResultado = multiplicar(entradaA, escalar);//entradaA * escalar; //TODO Aqui se invoca a proc ASM
+        entradaResultado = multiplicar(entradaA, escalar); //Aqui se invoca a proc ASM
         outResultado << (qint32) entradaResultado;
         mutex.unlock();
         emit triggerIncrementarEntradas();
     }
+    emit triggerActualizarMemoria(-(matrizA.size() + 3 * sizeof(int)));
+    emit triggerActualizarMemoria(-(2 * sizeof (int)
+                                    + 2 * sizeof (QFile)
+                                    + 2 * sizeof (QDataStream)
+                                    + sizeof (QMutex)));
 }
