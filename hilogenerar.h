@@ -26,6 +26,9 @@ public:
     //Metodos
     void run();
     int generarAleatorio(char signo);
+
+signals:
+    void triggerIncrementarEntradas();
 };
 
 #endif // HILOGENERAR_H

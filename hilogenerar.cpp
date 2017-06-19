@@ -27,26 +27,13 @@ void HiloGenerar::run(){
 
     salidaBytes << (qint32) datosMatriz->numeroFilas;
     salidaBytes << (qint32) datosMatriz->numeroColumnas;
-    //int d;
+
     for(int i = 0; i < datosMatriz->numeroFilas; i++){
         for(int j = 0; j < datosMatriz->numeroColumnas; j++){
-            //d = generarAleatorio(datosMatriz->signos);
-            //qDebug("(%d,%d) : %d",i,j,d);
             salidaBytes << (qint32) generarAleatorio(datosMatriz->signos);
+            emit triggerIncrementarEntradas();
         }
     }
-
-    //double elapsed = ((end.tv_sec - start.tv_sec) * 1000) + (end.tv_usec / 1000 - start.tv_usec / 1000);
-    qDebug("Matriz Generada.");
-    /*archivo.seek(3999996); //
-    QDataStream in(archivo.read(4)); //LEER POSICION ESPECIFICA
-
-    int dato;
-
-
-    in >> dato;
-
-    qDebug("%d",dato);*/
 }
 
 int HiloGenerar::generarAleatorio(char signo){

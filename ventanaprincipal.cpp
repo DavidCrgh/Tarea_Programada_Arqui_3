@@ -62,6 +62,8 @@ void VentanaPrincipal::cambiarOperacion(int index)
     QLineEdit* entradaEscalar = new QLineEdit;
     entradaEscalar->setValidator(new QIntValidator(this));
 
+    ui->spinBox->setEnabled(true);
+
     switch(index){
     case 0: // Suma
         labelOperando->setText("Matriz B");
@@ -112,6 +114,7 @@ void VentanaPrincipal::cambiarOperacion(int index)
                 this, SLOT(transponerMatriz()));
         break;
     case 4: //Tipo
+        ui->spinBox->setEnabled(false);
         ui->botonOperar->setText("Tipo Matriz");
         connect(ui->botonOperar, SIGNAL(clicked(bool)),
                 this, SLOT(determinarTipo()));
@@ -369,6 +372,8 @@ void VentanaPrincipal::determinarTipo(){
     HiloTipo* hiloTipo = new HiloTipo(pathMatrizA, mensajeTipos, esCuadrada);
     connect(hiloTipo, SIGNAL(triggerIncrementarEntradas()),
             this, SLOT(incrementarEntradas()));
+    connect(hiloTipo, SIGNAL(triggerActualizarMemoria(int)),
+            this, SLOT(actualizarMemoria(int)));
     connect(hiloTipo, SIGNAL(finalizarRevision(QString)),
             this, SLOT(finalizarRevisionTipo(QString)));
     hiloTipo->start();
@@ -384,11 +389,8 @@ void VentanaPrincipal::pintarMatriz(QString matriz){
     QDataStream in(&archivo);
 
     int n, m;
-
     in >> n;
     in >> m;
-
-    //archivo.seek(8); //Buscar byte donde empieza matriz
 
     QVBoxLayout* layoutTabla = new QVBoxLayout();
     QTableWidget* tabla = new QTableWidget(n,m);
@@ -410,10 +412,21 @@ void VentanaPrincipal::pintarMatriz(QString matriz){
 }
 
 void VentanaPrincipal::abrirArchivoMatrizA(){
-    pathMatrizA = QFileDialog::getOpenFileName(this,
+    QString pathArchivo = QFileDialog::getOpenFileName(this,
                                                tr("Abrir Matriz A"),
                                                "/home/davidcr/Desktop",
                                                tr("Matrices (*.mtz)"));
+    if(pathArchivo == pathResultado){
+        QMessageBox mensajeError;
+        mensajeError.setText("Error:\n"
+                             "No es posible seleccionar Resultado.mtz como\n"
+                             "operando. Porfavor cambie el nombre si desea\n"
+                             "usarlo.");
+        mensajeError.exec();
+    } else if(pathArchivo != ""){
+        pathMatrizA = pathArchivo;
+    }
+
     if(pathMatrizA != ""){
         QFile archivo(pathMatrizA);
 
@@ -433,10 +446,21 @@ void VentanaPrincipal::abrirArchivoMatrizA(){
 }
 
 void VentanaPrincipal::abrirArchivoMatrizB(){
-    pathMatrizB = QFileDialog::getOpenFileName(this,
+    QString pathArchivo = QFileDialog::getOpenFileName(this,
                                                tr("Abrir Matriz B"),
                                                "/home/davidcr/Desktop",
                                                tr("Matrices (*.mtz)"));
+    if(pathArchivo == pathResultado){
+        QMessageBox mensajeError;
+        mensajeError.setText("Error:\n"
+                             "No es posible seleccionar Resultado.mtz como\n"
+                             "operando. Porfavor cambie el nombre si desea\n"
+                             "usarlo.");
+        mensajeError.exec();
+    } else if(pathArchivo != ""){
+        pathMatrizB = pathArchivo;
+    }
+
     if(pathMatrizB != ""){
         QFile archivo(pathMatrizB);
 
@@ -462,8 +486,12 @@ void VentanaPrincipal::on_botonGenerar_clicked()
 
 void VentanaPrincipal::recibirDatosMatriz(){
     DatosMatriz* datosMatriz = ventanaGenerar->datosMatriz;
-    qDebug("Datos recibidos");
+    entradasAOperar = datosMatriz->numeroFilas * datosMatriz->numeroColumnas;
+    entradasOperadas = 0;
+    gettimeofday(&inicioOperacion, NULL);
     HiloGenerar* hilo = new HiloGenerar(datosMatriz);
+    connect(hilo, SIGNAL(triggerIncrementarEntradas()),
+            this, SLOT(incrementarEntradas()));
     hilo->start();
 }
 
@@ -484,7 +512,6 @@ void VentanaPrincipal::incrementarEntradas(){
         mostrarTiempo();
         ui->botonOperar->setEnabled(true);
         ui->botonVerResultado->setEnabled(true);
-        qDebug("Operacion terminada");
     }
 }
 

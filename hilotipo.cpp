@@ -8,6 +8,7 @@ HiloTipo::HiloTipo(QString matrizA, QString mensajeTipo, bool esCuadrada){
 }
 
 void HiloTipo::run(){
+    emit triggerActualizarMemoria(matrizA.size() + sizeof (bool));
     QFile archivoA(matrizA);
 
     if(!archivoA.open(QIODevice::ReadWrite)){
@@ -31,6 +32,11 @@ void HiloTipo::run(){
     bool esIdentidad = esCuadrada;
 
     int seguir;
+
+    emit triggerActualizarMemoria(4 * sizeof (int)
+                                  + 6 * sizeof (bool)
+                                  + sizeof (QFile)
+                                  + sizeof (QDataStream));
 
     inA >> filas;
     inA >> columnas;
@@ -92,5 +98,10 @@ void HiloTipo::run(){
     if(esIdentidad){
         mensajeTipo += "    * Matriz Identidad\n";
     }
+    emit triggerActualizarMemoria(-(matrizA.size() + sizeof (bool)));
+    emit triggerActualizarMemoria(-(4 * sizeof (int)
+                                  + 6 * sizeof (bool)
+                                  + sizeof (QFile)
+                                  + sizeof (QDataStream)));
     emit finalizarRevision(mensajeTipo);
 }

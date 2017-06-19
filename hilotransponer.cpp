@@ -30,7 +30,6 @@ void HiloTransponer::run(){
     mutex.lock();
     if(!archivoA.open(QIODevice::ReadWrite)
             | !archivoResultado.open(QIODevice::ReadWrite)){
-        qDebug("Error al abrir archivos");
         return;
     }
     mutex.unlock();
